@@ -1,0 +1,60 @@
+#! /opt/local/bin/vvp
+:ivl_version "11.0 (stable)" "(v11_0)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "/opt/local/lib/ivl/system.vpi";
+:vpi_module "/opt/local/lib/ivl/vhdl_sys.vpi";
+:vpi_module "/opt/local/lib/ivl/vhdl_textio.vpi";
+:vpi_module "/opt/local/lib/ivl/v2005_math.vpi";
+:vpi_module "/opt/local/lib/ivl/va_math.vpi";
+S_0x7fb1bac04170 .scope module, "FA_test" "FA_test" 2 18;
+ .timescale 0 0;
+v0x7fb1bac14b10_0 .var "a", 0 0;
+v0x7fb1bac14bc0_0 .var "b", 0 0;
+v0x7fb1bac14c50_0 .var "cin", 0 0;
+v0x7fb1bac14d00_0 .net "cout", 0 0, L_0x7fb1bac150e0;  1 drivers
+v0x7fb1bac14db0_0 .net "sum", 0 0, L_0x7fb1bac14fb0;  1 drivers
+S_0x7fb1bac042f0 .scope module, "FA" "full_adder" 2 23, 2 1 0, S_0x7fb1bac04170;
+ .timescale 0 0;
+    .port_info 0 /OUTPUT 1 "sum";
+    .port_info 1 /OUTPUT 1 "cout";
+    .port_info 2 /INPUT 1 "input1";
+    .port_info 3 /INPUT 1 "input2";
+    .port_info 4 /INPUT 1 "cin";
+L_0x7fb1bac14e80 .functor XOR 1, v0x7fb1bac14b10_0, v0x7fb1bac14bc0_0, C4<0>, C4<0>;
+L_0x7fb1bac14fb0 .functor XOR 1, L_0x7fb1bac14e80, v0x7fb1bac14c50_0, C4<0>, C4<0>;
+L_0x7fb1bac150e0 .functor XOR 1, L_0x7fb1bac15240, L_0x7fb1bac15190, C4<0>, C4<0>;
+L_0x7fb1bac15190 .functor AND 1, v0x7fb1bac14b10_0, v0x7fb1bac14bc0_0, C4<1>, C4<1>;
+L_0x7fb1bac15240 .functor AND 1, L_0x7fb1bac14e80, v0x7fb1bac14c50_0, C4<1>, C4<1>;
+v0x7fb1bac04560_0 .net "c1", 0 0, L_0x7fb1bac15190;  1 drivers
+v0x7fb1bac14600_0 .net "c2", 0 0, L_0x7fb1bac15240;  1 drivers
+v0x7fb1bac146a0_0 .net "cin", 0 0, v0x7fb1bac14c50_0;  1 drivers
+v0x7fb1bac14730_0 .net "cout", 0 0, L_0x7fb1bac150e0;  alias, 1 drivers
+v0x7fb1bac147d0_0 .net "input1", 0 0, v0x7fb1bac14b10_0;  1 drivers
+v0x7fb1bac148b0_0 .net "input2", 0 0, v0x7fb1bac14bc0_0;  1 drivers
+v0x7fb1bac14950_0 .net "s1", 0 0, L_0x7fb1bac14e80;  1 drivers
+v0x7fb1bac149f0_0 .net "sum", 0 0, L_0x7fb1bac14fb0;  alias, 1 drivers
+    .scope S_0x7fb1bac04170;
+T_0 ;
+    %vpi_call 2 27 "$monitor", $time, "A = %d, B = %d, CIN=  %d, SUM = %d, COUT = %d\012", v0x7fb1bac14b10_0, v0x7fb1bac14bc0_0, v0x7fb1bac14c50_0, v0x7fb1bac14db0_0, v0x7fb1bac14d00_0 {0 0 0};
+    %delay 5, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0x7fb1bac14b10_0, 0, 1;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0x7fb1bac14bc0_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0x7fb1bac14c50_0, 0, 1;
+    %delay 5, 0;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0x7fb1bac14b10_0, 0, 1;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0x7fb1bac14bc0_0, 0, 1;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0x7fb1bac14c50_0, 0, 1;
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "ADDER/STR_FULL_ADDER.v";
