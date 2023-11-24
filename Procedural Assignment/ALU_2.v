@@ -13,6 +13,6 @@ module alu_example(alu_out, A, B, operation, en);
             3'b000: alu_reg = A+B;
             3'b001: alu_reg = A - B;
             3'b011: alu_reg = ~A;
-            default: alu_eg = 4'b0;
-        giendcase
+            default: alu_reg = 4'b0;
+        endcase
 endmodule

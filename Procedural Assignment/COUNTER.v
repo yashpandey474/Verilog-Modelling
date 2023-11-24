@@ -1,4 +1,4 @@
-//4BIT COUNTE
+//4BIT COUNTER
 module counter (clock, reset, count);
 
 

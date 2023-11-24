@@ -1,119 +1,103 @@
-module MUX_SMALL  (in1, in2, sel, out);
-    input in1, in2, sel;
+//2TO1 MUX USING DATAFLOW MODELLING
+module MUX_SMALL (in1, in2, sel, out);
+    input in1,in2, sel;
     output out;
 
-    assign out = ((~sel) & in1 | (sel & in2));
+    assign out = sel ? in2: in1;
 endmodule
 
-//8TO1 MUX USING MULTIPLE 2TO1 MUX
-module MUX_BIG(in, sel, out);
-    input [2: 0] sel;
+//8TO1MUX USING 2TO1MUXES
+module MUX_BIG (in, sel, out);
     input [7: 0] in;
+    input [2: 0] sel;
     output out;
 
-    wire out_1, out_2, out_3, out_4;
-    wire out_5, out_6;
-    MUX_SMALL M0(in[0], in[1], sel[0], out_1);    
-    MUX_SMALL M1(in[2], in[3], sel[0], out_2); 
-    MUX_SMALL M2(in[4], in[5], sel[0], out_3); 
-    MUX_SMALL M3(in[6], in[7], sel[0], out_4); 
+    //OUTER MUXES
+    wire [3: 0] out1;
+    MUX_SMALL M10(in[0], in[1], sel[0], out1[0]);
+    MUX_SMALL M11(in[2], in[3], sel[0], out1[1]);
+    MUX_SMALL M12(in[4], in[5], sel[0], out1[2]);
+    MUX_SMALL M13(in[6], in[7], sel[0], out1[3]);
 
+    //MIDDLE MUXES
+    wire [1: 0] out2;
+    MUX_SMALL M20(out1[0], out1[1], sel[1], out2[0]);
+    MUX_SMALL M21(out1[2], out1[3], sel[1], out2[1]);
 
-    MUX_SMALL M4(out_1, out_2, sel[1], out_5); 
-    MUX_SMALL M5(out_3, out_4, sel[1], out_6); 
-
-    MUX_SMALL M6(out_5, out_6, sel[2], out); 
+    //OUTER MUX
+    MUX_SMALL M30(out2[0], out2[1], sel[2], out);
 endmodule
 
 
-//T FLIP FLOP WITH ASYNCHRONOUS CLEAR
-module TFF (T, Q, Qbar, clock, clear);
+//T FLIP FLOP WITH ASYNCHRONOUS CLEAR. BEHAVIOURAL MDELLINIG
+module TFF (T, clock, clear, Q);
+    output reg Q;
     input T, clock, clear;
-    output reg Q, Qbar;
 
-    always @ (negedge clock or clear)
+    always @ (posedge clock or posedge clear)
     begin
-        if (clear) begin
-            Q <= 1'b0;
-            Qbar <= 1'b1;
-        end
+        if (clear) Q <= 1'b0;
         else begin
-            if (T) begin
-                Q <= ~Q;
-                Qbar <= Q;
-            end
-            else begin
-                Q <= Q;
-                Qbar <= ~Q;
-            end
+            case(T)
+            1'b0: Q<=Q;
+            1'b1: Q<=~Q;
+            endcase
         end
     end
 endmodule
 
-//SYNCHRONOUS BINARY UP COUNTER WITH ASYNCHRONOUS CLEAR
-module COUNTER_4BIT (Q, clock, clear);
-    output [3: 0] Q;
+//4-BIT SYNCHRONOUS UP COUNTER WITH ASYNCHRONOUS CLEAR
+module COUNTER_4BIT (counterOut, clock, clear);
     input clock, clear;
+    output [3: 0] counterOut;
 
-    //INSTANTIATE 4 T FLIP FLOPS
-    wire [3: 0] Qbar;
-    TFF T0 (1'b1, Q[0], Qbar[0], clock, clear);
-    TFF T1 (Q[0], Q[1], Qbar[1], clock, clear);
-    TFF T2 (Q[0] & Q[1], Q[2], Qbar[2], clock, clear);
-    TFF T3 (Q[0] & Q[1] & Q[2], Q[3], Qbar[3], clock, clear);
+    TFF TFF0(1'b1, clock, clear, counterOut[0]);
+    TFF TFF1(counterOut[0], clock, clear, counterOut[1]);
+    TFF TFF2(counterOut[1] & counterOut[0], clock, clear, counterOut[2]);
+    TFF TFF3(counterOut[2] & counterOut[1] & counterOut[0], clock, clear, counterOut[3]);
 endmodule
 
-module COUNTER_3BIT (Q, clock, clear);
-    output [2: 0] Q;
+//3-BIT SYNCHRONOUS UP COUNTER WITH ASYNCHRONOUS CLEAR
+module COUNTER_3BIT (counterOut, clock, clear);
+    output [2: 0] counterOut;
     input clock, clear;
 
-    //INSTANTIATE 4 T FLIP FLOPS
-    wire [2: 0] Qbar;
-    TFF T0 (1'b1, Q[0], Qbar[0], clock, clear);
-    TFF T1 (Q[0], Q[1], Qbar[1], clock, clear);
-    TFF T2 (Q[0] & Q[1], Q[2], Qbar[2], clock, clear);
+    TFF TFF0(1'b1, clock, clear, counterOut[0]);
+    TFF TFF1(counterOut[0], clock, clear, counterOut[1]);
+    TFF TFF2(counterOut[1] & counterOut[0], clock, clear, counterOut[2]);
 endmodule
 
-//16X8 MEMORY
-module MEMORY (address, data_out);
-    reg [7: 0] memory [15: 0];
-    output [7: 0] data_out;
+//16X8 MEMORY 
+module MEMORY (address, dataOut);
     input [3: 0] address;
+    output [7: 0] dataOut;
+    reg [7: 0] memory [15: 0];
     integer k;
 
     initial begin
-        for (k = 0; k < 16; k = k + 1)        
+        for (k = 0; k < 16; k = k + 1)
         begin
-            memory[k] = (k%2 == 0) ? 8'hcc: 8'haa;
+            if (k % 2 == 0) memory[k] = 8'hcc;
+            else memory[k] = 8'haa;
         end
     end
 
-    assign data_out = memory[address];
+    assign dataOut = memory[address];
 endmodule
 
-//INTEGRATING MODULE
+//INTEGRATED
 module INTG (clock, clear, out);
-    output out;
     input clock, clear;
+    output out;
 
+    wire [2: 0] counterOut1;
+    wire [3: 0] counterOut2;
+    wire [7: 0] dataOut;
 
-    //INSTANTIATE MEMORY
-    wire [7: 0] data_out;
-    MEMORY MEM(counter1Out, data_out);
-
-    //INSTANTIATE 3TO1 MUX
-    wire [2: 0] counter2Out;
-    COUNTER_3BIT COUNTER_2(counter2Out, clock, clear);
-    
-    //INSTANTIATE 4-BIT UP-COUNTER
-    wire clock2;
-    wire[3: 0] counter1Out;
-    assign clock2 = &counter2Out;
-    COUNTER_4BIT COUNTER_1(counter1Out, clock2, clear);
-
-
-    //INSTANTIATE 8TO1 MUX
-    MUX_BIG MUX(data_out, counter2Out, out);
+    MEMORY MEM(counterOut2, dataOut);
+    COUNTER_3BIT COUNTER1(counterOut1, clock, clear);
+    COUNTER_4BIT COUNTER2(counterOut2, counterOut1[2] & counterOut1[1] & counterOut1[0], clear);
+    MUX_BIG MUX(dataOut, counterOut1, out);
 endmodule
 
 module TESTBENCH;
@@ -121,18 +105,17 @@ module TESTBENCH;
     wire out;
 
     INTG DP(clock, clear, out);
-
     initial begin
         clock = 1'b0;
         clear = 1'b1;
     end
 
-    always #5 clock = ~clock;
+    always #500000 clock  = ~clock;
 
     initial begin
-        $monitor ($time, "COUNT1 = %d, COUNT2 = %d, OUT = %b\n", DP.counter1Out, DP.counter2Out, out);
+        $monitor ($time, "CLEAR = %b OUT = %b COUNTER1 = %b COUNTER2 = %b\n", clear, out, DP.counterOut1, DP.counterOut2);
         #5 clear = 1'b0;
-        #100 $finish;
+        #1000000000 $finish;
     end
-
+    
 endmodule

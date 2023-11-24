@@ -203,6 +203,8 @@ module GCD_controlpath_2 (ldA, ldB, sel1, sel2, sel_in, done, clock, lt, gt, eq,
             end
         endcase
     end
+
+endmodule
 module GCD_datapath(gt, lt, eq, ldA, ldB, sel1, sel2, sel_in, data_in, clock);
     input clock;
     input [15: 0] data_in;

@@ -1,61 +1,57 @@
-//SERIAL PARITY DETECTOR
-//INPUT IS COMING BIT BY BIT
+//PARITY DETECTOR FOR A STREAM OF INPUT BITS
+module PARITY_DETECTOR (in, clock, reset,  out);
+    input in, clock, reset;
+    output reg out;
 
-module pariity_detector(
-    input_bit,
-    parity,
-    clock
-);
-    input clock, input_bit;
-    output reg parity;
+    //REGISTERS FOR STATE
     reg state;
 
-    parameter s0 = 0, s1 = 1;
-    parameter ODD = 0, EVEN = 1;
+    //PARAMETERS FOR STATE [EVEN PARITY; MAKES TOTAL NUMBER OF ZEROES (INPUT & PARITY BIT) AS EVEN]
+    parameter ODD = 1'b1, EVEN = 1'b0;
 
-    //STATE CHANGE ALWAYS BLOCK
-    always @ (posedge clock)
+    //ALWAYS BLOCK FOR STATE CHANGE
+    always @ (posedge clock or posedge reset)
     begin
-        case(state)
-            ODD: state <= input_bit ? EVEN: ODD;
-            EVEN: state <= input_bit? ODD: EVEN;
-            default: state <= EVEN;
-        endcase
+        if (reset) state <= EVEN;
+        else begin
+            if (in)
+            case(state)
+                ODD: state <= EVEN;
+                EVEN: state <= ODD;
+            endcase
+
+            //ELSE REMAINS AT SAME STATE [NOT SPECIFIED IN ALWAYS =>> REMAINS SAME]
+        end
     end
 
-    //OUTPUT CHANGE ALWAYS BLOCK
+    //ALWAYS BLOCK FOR OUTPUT
     always @ (state)
-    begin
         case(state)
-            ODD: parity <= 1;
-            EVEN: parity <= 0;
+        ODD: out <= 1'b1;
+        EVEN: out <= 1'b0;
         endcase
-    end
 endmodule
 
-module test_parity;
-    reg clock, input_bit;
-    wire parity;
+module TESTBENCH;
+    reg in, clock, reset;
+    wire out;
 
-    pariity_detector PAR (input_bit, parity, clock);
+    PARITY_DETECTOR PAR_DETECT(in, clock, reset,  out);
 
     initial begin
         clock = 1'b0;
+        reset = 1'b1;
+
+        #15 reset = 1'b0;
     end
 
-    always # 5 clock = ~clock;
+    always #5 clock = ~clock;
 
     initial begin
-        $monitor($time, "INPUT = %b, PARITY = %b", input_bit, parity);
-        #2 input_bit = 0;
-        #10 input_bit = 1;
-        #10 input_bit = 1;
-        #10 input_bit = 1;
-        #10 input_bit = 1;
-        #10 input_bit = 1;
-        #10 input_bit = 1;
-        #5 input_bit = 1;
+        $monitor ($time, " RESET = %b IN = %b OUT = %b STATE = %b\n", reset, in, out, PAR_DETECT.state);
+        #12 in = 0; #10 in = 0; #10 in = 1; #10 in = 0; #10 in = 1;
         #10 $finish;
     end
-endmodule
 
+
+endmodule

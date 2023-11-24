@@ -52,7 +52,7 @@ module COUNTER (out, decr, load, clock);
         if (load) out <= 16;
     end
 endmodule
-module BOOTH_MUL_datapath(data_in, clock 
+module BOOTH_MUL_datapath(data_in, clock,
 ldA, ldQ, ldM, ldcnt, clrQ, clrA, decr
 sftQ, sftA, addSub,clrff, qm1, eqz);
 
@@ -94,9 +94,9 @@ addsub, start, decr, ldcnt, done, clk, qo, qm1);
             S3: state <= S5;
             S4: state <= S5;
 
-            S5: #2 if (({q0, qm} == 2'b10) && eqz ) state <= S4;
-                else if (({q0, qm} == 2'b01) && (eqz)) state <= S3;
-                else if (eqz) state <= S5;
+            S5: #2 if (({q0, qm} == 2'b10) && !eqz ) state <= S4;
+                else if (({q0, qm} == 2'b01) && (!eqz)) state <= S3;
+                else if (!eqz) state <= S5;
                 else state <= S0;
 
             S6: state <= S6;

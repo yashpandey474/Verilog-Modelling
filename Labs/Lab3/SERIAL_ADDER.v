@@ -1,60 +1,69 @@
-module SHIFT_REGISTER (
-    input clock,
-    input enable, input data_in, output reg [3: 0] out,
-    input [3: 0] data_load);
+module FULL_ADDER (x, y, z, s, c);
+    input x, y, z;
+    output s, c;
 
-
-    always @ (posedge clock)
-    begin
-        if (enable)
-        begin
-            //SHIFT
-            out <= {data_in, out[2: 0]};
-        end
-        else begin
-            //LOAD
-            out <= data_load;
-         end
-    end
+    assign s = x ^ y ^ z;
+    assign c = (x & y) | (z & (x ^ y));
 endmodule
 
-module D_FLIP_FLOP(Q, D, clear, clock);
-    input D, clear, clock;
+module SHIFT_REGISTER_4BIT (serialInput, clock, enable, out);
+    input clock, serialInput, enable;
+    output reg [3: 0] out;
+    
+    initial begin
+        out = 4'b0101;
+    end
+    always @ (posedge clock)
+        if (enable) out = {serialInput, out[3: 1]};
+endmodule
+
+module D_FLIP_FLOP (Q, D, clock, clear);
+    input D, clock, clear;
     output reg Q;
 
-    always @ (negedge clock or negedge clear)
+    always @ (posedge clock or negedge clear)
     begin
         if (!clear) Q <= 1'b0;
         else Q <= D;
     end
 endmodule
 
-module FULL_ADDER(x, y, z, s, c);
-    input  x, y;
-    output  s;
-    input z;
-    output c;
+module SERIAL_ADDER(serialInput, clock, enable, clear, regA);
+    input serialInput, clock, clear, enable;
+    output [3: 0] regA;
+    wire [3: 0] regB;
 
-    assign {c, s} = (x + y + z);
+    wire s, c, Q;
+
+    SHIFT_REGISTER_4BIT A(s, clock, enable, regA);
+    SHIFT_REGISTER_4BIT B(serialInput, clock, enable, regB);
+
+    FULL_ADDER FA(regA[0], regB[0], Q, s, c);
+
+    D_FLIP_FLOP DFF(Q, c, clock & enable, clear);
 endmodule
 
-module INTG (clock, regEnable, clear, A, B);
-    input clock, regEnable, clear;
-    input [3: 0] A, B;
-    
-    //INSTANTIATE FULL ADDER
-    wire [3: 0] outRegA, outRegB;
-    wire flipFlopOut, sumOut, carryOut;
+module TESTBENCH;
+    reg serialInput, clock, enable, clear;
+    wire [3: 0] regA;
+    integer i;
 
-    FULL_ADDER FA(outRegA[3], outRegB[3], flipFlopOut, sumOut, carryOut);
+    SERIAL_ADDER ADDER(serialInput, clock, enable, clear, regA);
 
-    //INSTANTIATE SHIFT REG A
-    SHIFT_REGISTER EGA (clock, regEnable, sumOut, outRegA, A);
+    initial begin
+        clock = 1'b0;
+        clear = 1'b0;
+        enable = 1'b1;
+    end
 
-    //INSTANTIATE SHIFT REG B
-    SHIFT_REGISTER REGB (clock, regEnable, sumOut, outRegB, B);
+    always #5 clock = ~clock;
 
-    //IINSTANTIATE FLIP FLOP TO STORE CARRRY
-    D_FLIP_FLOP DFF(flipFlopOut, carryOut, clear, clock & regEnable);
+    initial begin
+        $monitor($time, " IN = %b CLEAR = %b ENABLE = %b REGA = %b\n", serialInput, clear, enable, regA);
 
+        #5 clear = 1'b1; serialInput = 1'b1;
+        #10 serialInput = 1'b0;
+        #10 serialInput = 1'b1;
+        #100 $finish;
+    end
 endmodule

@@ -50,6 +50,7 @@ module test_cyclic_lamp;
 
     initial
     begin
+        $dumpfile()
         $monitor($time, "RGY: %b", light);
     end
     endmodule

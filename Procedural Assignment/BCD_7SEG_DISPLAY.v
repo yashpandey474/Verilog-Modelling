@@ -1,13 +1,13 @@
 module bcd_to_7seg (bcd, seg);
 
-//0 TO 9
-input [3: 0] bcd;
+    //0 TO 9
+    input [3: 0] bcd;
 
-//A -> MSB. G -> LSB
-output reg [6: 0] seg;
+    //A -> MSB. G -> LSB
+    output reg [6: 0] seg;
 
-always @ (bcd)
-case
+    always @ (bcd)
+    case(bcd)
     //SEGMENT GLOWS -> BIT = 0
 
     //GLOW ALL EXCEPT G
@@ -25,3 +25,4 @@ case
     //ALL OFF
     default: seg = 6'b1111111;
     endcase
+endmodule

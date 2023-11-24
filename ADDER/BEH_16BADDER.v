@@ -2,7 +2,7 @@
 //GENERATION OF STATUS FLAGS: SIGN, ZERO, CARRY, PARITY, OVERFLOW
 
 module 16b_adder(
-    input1, input2, sum, carry, sign
+    input1, input2, sum, carry, sign,
     zero, parity, overflow
     );
 

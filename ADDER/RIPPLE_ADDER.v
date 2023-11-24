@@ -18,7 +18,7 @@ module 16b_adder(input1, input2, sum, carry, sign, zero, parity, overflow);
     assign parity = ~^sum;
 
     //OVERFLOW: NEG & NEG LEADS TO POS OR POS & POS LEADS TO NEG
-    assign overflow = (~sum[15] & input1[15] & input2[15] )
+    assign overflow = (~sum[15] & input1[15] & input2[15] ) | (sum[15] & ~input1[15] & ~input2[15]);
 
     //INSTANTIATE 4 ADDERS
     genvar j;
